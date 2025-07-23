@@ -342,6 +342,77 @@ class RecipeApp {
                 element.innerHTML = this.formatRecipe(recipes[type]);
             }
         });
+
+        // 追加食材提案を表示
+        this.displayAdditionalIngredients(recipes);
+    }
+
+    displayAdditionalIngredients(recipes) {
+        const additionalSection = document.getElementById('additional-ingredients-section');
+        const additionalContent = document.getElementById('additional-ingredients-content');
+        
+        // レシピから追加食材提案を抽出
+        const additionalSuggestions = this.extractAdditionalIngredients(recipes);
+        
+        if (additionalSuggestions.length > 0) {
+            additionalContent.innerHTML = this.formatAdditionalIngredients(additionalSuggestions);
+            additionalSection.style.display = 'block';
+        } else {
+            additionalSection.style.display = 'none';
+        }
+    }
+
+    extractAdditionalIngredients(recipes) {
+        const suggestions = [];
+        const recipeTypes = ['japanese', 'western', 'chinese'];
+        
+        recipeTypes.forEach(type => {
+            if (recipes[type]) {
+                const match = recipes[type].match(/【追加食材提案】([\s\S]*?)$/);
+                if (match) {
+                    const additionalText = match[1].trim();
+                    const lines = additionalText.split('\n');
+                    
+                    lines.forEach(line => {
+                        const trimmedLine = line.trim();
+                        if (trimmedLine.startsWith('・')) {
+                            const suggestion = trimmedLine.substring(1).trim();
+                            if (suggestion && !suggestions.includes(suggestion)) {
+                                suggestions.push(suggestion);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        
+        return suggestions;
+    }
+
+    formatAdditionalIngredients(suggestions) {
+        if (suggestions.length === 0) return '';
+        
+        const listItems = suggestions.map(suggestion => {
+            const parts = suggestion.split('：');
+            if (parts.length >= 2) {
+                const ingredient = parts[0].trim();
+                const recipe = parts.slice(1).join('：').trim();
+                return `<li>
+                    <div class="ingredient-suggestion">
+                        <span class="ingredient-name">${ingredient}</span>
+                        <span class="recipe-suggestion">：${recipe}</span>
+                    </div>
+                </li>`;
+            } else {
+                return `<li>
+                    <div class="ingredient-suggestion">
+                        <span class="recipe-suggestion">${suggestion}</span>
+                    </div>
+                </li>`;
+            }
+        }).join('');
+        
+        return `<ul>${listItems}</ul>`;
     }
 
     formatRecipe(recipeText) {

@@ -440,6 +440,69 @@ main {
     font-size: 1.1rem;
 }
 
+/* 追加食材提案セクション */
+.additional-ingredients-section {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    margin-top: 20px;
+    border-left: 4px solid #28a745;
+}
+
+.additional-ingredients-section h3 {
+    color: #28a745;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.additional-ingredients-content {
+    background: #f8fff9;
+    border-radius: 8px;
+    padding: 20px;
+    line-height: 1.8;
+}
+
+.additional-ingredients-content ul {
+    list-style: none;
+    padding: 0;
+}
+
+.additional-ingredients-content li {
+    padding: 8px 0;
+    border-bottom: 1px solid #e9f7ef;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.additional-ingredients-content li:last-child {
+    border-bottom: none;
+}
+
+.additional-ingredients-content li::before {
+    content: "🌟";
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.ingredient-suggestion {
+    flex: 1;
+}
+
+.ingredient-name {
+    font-weight: 600;
+    color: #28a745;
+}
+
+.recipe-suggestion {
+    color: #555;
+    margin-left: 5px;
+}
+
 /* エラーセクション */
 .error-section {
     background: white;

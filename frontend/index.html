@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>冷蔵庫レシピ提案アプリ</title>
+    <title>おうちの残り物で料理提案アプリ</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🥘 冷蔵庫レシピ提案アプリ</h1>
+            <h1>🥘 おうちの残り物で料理提案アプリ</h1>
             <p>冷蔵庫の食材を入力して、和洋中のレシピを提案します</p>
         </header>
 
@@ -43,7 +43,7 @@
                 <!-- 写真アップロードエリア -->
                 <div id="photo-input-area" class="input-area" style="display: none;">
                     <div class="input-group">
-                        <label for="photo-upload">冷蔵庫の写真をアップロードしてください</label>
+                        <label for="photo-upload">冷蔵庫の写真もしくは食材の写真をアップロードしてください</label>
                         <div class="photo-upload-container">
                             <input type="file" id="photo-upload" accept="image/*" capture="environment">
                             <div class="photo-preview" id="photo-preview" style="display: none;">
@@ -135,6 +135,14 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 追加食材提案セクション -->
+                <div class="additional-ingredients-section" id="additional-ingredients-section" style="display: none;">
+                    <h3>💡 こんな食材もあればこんな料理も作れます</h3>
+                    <div class="additional-ingredients-content" id="additional-ingredients-content">
+                        <!-- 追加食材提案がここに表示される -->
+                    </div>
+                </div>
             </section>
 
             <section class="error-section" id="error-section" style="display: none;">
@@ -147,7 +155,7 @@
         </main>
 
         <footer>
-            <p>&copy; 2025 冷蔵庫レシピ提案アプリ</p>
+            <p>&copy; 2025 おうちの残り物で料理提案アプリ</p>
         </footer>
     </div>
 
