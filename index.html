@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冷蔵庫レシピ提案アプリ</title>
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Yu Gothic', 'メイリオ', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .redirect-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .btn {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .loading {
+            margin-top: 20px;
+            font-style: italic;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-container">
+        <h1>🥘 冷蔵庫レシピ提案アプリ</h1>
+        <p>AIが冷蔵庫の食材からレシピを提案します</p>
+        <a href="frontend/index.html" class="btn">アプリを開く</a>
+        <div class="loading">
+            <p>自動的にリダイレクトします...</p>
+        </div>
+    </div>
+
+    <script>
+        // 3秒後に自動的にフロントエンドページにリダイレクト
+        setTimeout(() => {
+            window.location.href = 'frontend/index.html';
+        }, 3000);
+    </script>
+</body>
+</html>

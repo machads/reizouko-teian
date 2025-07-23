@@ -1,0 +1,29 @@
+{
+  "name": "reizouko-teian-app",
+  "version": "1.0.0",
+  "description": "冷蔵庫レシピ提案アプリ - 全体プロジェクト",
+  "main": "index.html",
+  "scripts": {
+    "start": "node scripts/start-app.js",
+    "frontend": "cd frontend && python -m http.server 8080 || python3 -m http.server 8080 || npx http-server -p 8080",
+    "backend": "cd backend && npm start",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "setup": "cd backend && npm install",
+    "build": "echo 'No build process needed for this static app'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "recipe",
+    "ai",
+    "food",
+    "cooking",
+    "supabase",
+    "openai"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "http-server": "^14.1.1"
+  }
+}

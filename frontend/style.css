@@ -1,0 +1,828 @@
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ベーススタイル */
+body {
+    font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Yu Gothic', 'メイリオ', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f7fa;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ヘッダー */
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 30px 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* メインコンテンツ */
+main {
+    flex: 1;
+}
+
+/* 入力セクション */
+.input-section {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+/* 入力方法選択 */
+.input-method-selector {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.input-method-selector h3 {
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.method-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.method-button {
+    padding: 12px 20px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    background: white;
+    color: #666;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
+}
+
+.method-button:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.method-button.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+}
+
+/* 入力エリア */
+.input-area {
+    margin-bottom: 20px;
+}
+
+/* 写真アップロード */
+.photo-upload-container {
+    position: relative;
+    border: 2px dashed #e1e8ed;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.3s ease;
+    background: #fafbfc;
+}
+
+.photo-upload-container:hover {
+    border-color: #667eea;
+}
+
+.photo-upload-container.dragover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+#photo-upload {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-placeholder {
+    pointer-events: none;
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.upload-placeholder p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.upload-note {
+    font-size: 0.9rem;
+    color: #999;
+}
+
+/* 写真プレビュー */
+.photo-preview {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.photo-preview img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.remove-photo-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+.remove-photo-btn:hover {
+    background: #dc3545;
+}
+
+/* 認識された食材 */
+.extracted-ingredients {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #28a745;
+}
+
+.extracted-ingredients h4 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.ingredients-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.ingredient-tag {
+    background: #667eea;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.edit-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s ease;
+}
+
+.edit-btn:hover {
+    background: #5a6268;
+}
+
+/* 共通入力項目 */
+.common-inputs {
+    border-top: 1px solid #e1e8ed;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+/* セレクトボックス */
+.input-group select {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-group {
+    margin-bottom: 25px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+    font-size: 1rem;
+}
+
+.input-group textarea,
+.input-group input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: inherit;
+}
+
+.input-group textarea:focus,
+.input-group input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* ボタンスタイル */
+.suggest-button {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.suggest-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.suggest-button:active {
+    transform: translateY(0);
+}
+
+.suggest-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ローディング */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 結果セクション */
+.results-section {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.results-section h2 {
+    padding: 25px 30px 0;
+    font-size: 1.8rem;
+    color: #333;
+    text-align: center;
+}
+
+/* タブ */
+.tabs {
+    display: flex;
+    background-color: #f8f9fa;
+    margin: 20px 30px 0;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #666;
+}
+
+.tab-button.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.tab-button:hover:not(.active) {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+/* タブコンテンツ */
+.tab-content {
+    padding: 30px;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+.recipe-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 25px;
+    border-left: 4px solid #667eea;
+}
+
+.recipe-content {
+    white-space: pre-wrap;
+    line-height: 1.7;
+    color: #444;
+    font-size: 1rem;
+}
+
+.recipe-content h3 {
+    color: #667eea;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.recipe-content h4 {
+    color: #555;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+/* エラーセクション */
+.error-section {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.error-message h3 {
+    color: #dc3545;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.error-message p {
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.retry-button {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.retry-button:hover {
+    background: #c82333;
+}
+
+/* フッター */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: auto;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 1024px) {
+    .container {
+        max-width: 90%;
+        padding: 15px;
+    }
+    
+    .method-buttons {
+        gap: 8px;
+    }
+    
+    .method-button {
+        min-width: 140px;
+        padding: 10px 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    header {
+        margin-bottom: 25px;
+        padding: 25px 15px;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    header p {
+        font-size: 1rem;
+    }
+    
+    .input-section {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .input-method-selector h3 {
+        font-size: 1.2rem;
+    }
+    
+    .method-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .method-button {
+        min-width: 200px;
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .photo-upload-container {
+        padding: 15px;
+    }
+    
+    .upload-icon {
+        font-size: 2.5rem;
+    }
+    
+    .photo-preview img {
+        max-height: 250px;
+    }
+    
+    .tab-content {
+        padding: 20px;
+    }
+    
+    .tabs {
+        margin: 15px 20px 0;
+    }
+    
+    .tab-button {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .suggest-button {
+        font-size: 1.1rem;
+        padding: 16px;
+    }
+    
+    .ingredients-list {
+        gap: 6px;
+    }
+    
+    .ingredient-tag {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 8px;
+    }
+    
+    header {
+        padding: 20px 10px;
+        margin-bottom: 20px;
+    }
+    
+    header h1 {
+        font-size: 1.7rem;
+        margin-bottom: 8px;
+    }
+    
+    header p {
+        font-size: 0.9rem;
+    }
+    
+    .input-section {
+        padding: 15px;
+    }
+    
+    .input-method-selector {
+        margin-bottom: 20px;
+    }
+    
+    .input-method-selector h3 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+    
+    .method-button {
+        min-width: unset;
+        width: 100%;
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    
+    .input-group label {
+        font-size: 0.95rem;
+        margin-bottom: 6px;
+    }
+    
+    .input-group textarea,
+    .input-group input,
+    .input-group select {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+    
+    .photo-upload-container {
+        padding: 12px;
+    }
+    
+    .upload-placeholder p {
+        font-size: 1rem;
+    }
+    
+    .upload-note {
+        font-size: 0.8rem;
+    }
+    
+    .photo-preview img {
+        max-height: 200px;
+    }
+    
+    .extracted-ingredients {
+        padding: 15px;
+    }
+    
+    .extracted-ingredients h4 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+    }
+    
+    .tab-content {
+        padding: 15px;
+    }
+    
+    .recipe-card {
+        padding: 15px;
+    }
+    
+    .tabs {
+        flex-direction: column;
+        gap: 5px;
+        margin: 12px 15px 0;
+        padding: 3px;
+    }
+    
+    .tab-button {
+        width: 100%;
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .suggest-button {
+        font-size: 1rem;
+        padding: 15px;
+    }
+    
+    .loading {
+        gap: 8px;
+    }
+    
+    .spinner {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .error-section {
+        padding: 20px;
+    }
+    
+    .error-message h3 {
+        font-size: 1.3rem;
+    }
+    
+    .error-message p {
+        font-size: 0.9rem;
+    }
+    
+    footer {
+        padding: 15px 0;
+        font-size: 0.8rem;
+    }
+}
+
+/* 超小型デバイス対応 */
+@media (max-width: 320px) {
+    .container {
+        padding: 5px;
+    }
+    
+    header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .input-section {
+        padding: 12px;
+    }
+    
+    .method-button {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+    
+    .suggest-button {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    
+    .tab-button {
+        padding: 8px;
+        font-size: 0.8rem;
+    }
+}
+
+/* 高解像度ディスプレイ対応 */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 900px;
+    }
+    
+    .input-section {
+        padding: 40px;
+    }
+    
+    .tab-content {
+        padding: 35px;
+    }
+    
+    .recipe-card {
+        padding: 30px;
+    }
+}
+
+/* ダークモード対応（ユーザーの設定に基づく） */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+    }
+    
+    .input-section,
+    .results-section,
+    .error-section {
+        background: #2d2d2d;
+        color: #e0e0e0;
+    }
+    
+    .input-group textarea,
+    .input-group input,
+    .input-group select {
+        background: #3a3a3a;
+        border-color: #555;
+        color: #e0e0e0;
+    }
+    
+    .photo-upload-container {
+        background: #3a3a3a;
+        border-color: #555;
+    }
+    
+    .extracted-ingredients {
+        background: #3a3a3a;
+    }
+    
+    .recipe-card {
+        background: #3a3a3a;
+    }
+}
+
+/* 印刷用スタイル */
+@media print {
+    header,
+    .input-section,
+    .error-section,
+    footer {
+        display: none;
+    }
+    
+    .results-section {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .tabs {
+        display: none;
+    }
+    
+    .tab-panel {
+        display: block !important;
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+    }
+    
+    .recipe-card {
+        border: 1px solid #000;
+        box-shadow: none;
+    }
+}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冷蔵庫レシピ提案アプリ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🥘 冷蔵庫レシピ提案アプリ</h1>
+            <p>冷蔵庫の食材を入力して、和洋中のレシピを提案します</p>
+        </header>
+
+        <main>
+            <section class="input-section">
+                <!-- 入力方法選択 -->
+                <div class="input-method-selector">
+                    <h3>食材の入力方法を選択</h3>
+                    <div class="method-buttons">
+                        <button type="button" id="text-method-btn" class="method-button active">
+                            📝 テキスト入力
+                        </button>
+                        <button type="button" id="photo-method-btn" class="method-button">
+                            📷 写真アップロード
+                        </button>
+                    </div>
+                </div>
+
+                <!-- テキスト入力エリア -->
+                <div id="text-input-area" class="input-area">
+                    <div class="input-group">
+                        <label for="ingredients">食材を入力してください（カンマ区切りで複数入力可）</label>
+                        <textarea 
+                            id="ingredients" 
+                            placeholder="例: 鶏肉, キャベツ, 人参, 玉ねぎ"
+                            rows="4"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <!-- 写真アップロードエリア -->
+                <div id="photo-input-area" class="input-area" style="display: none;">
+                    <div class="input-group">
+                        <label for="photo-upload">冷蔵庫の写真をアップロードしてください</label>
+                        <div class="photo-upload-container">
+                            <input type="file" id="photo-upload" accept="image/*" capture="environment">
+                            <div class="photo-preview" id="photo-preview" style="display: none;">
+                                <img id="preview-image" alt="アップロード画像プレビュー">
+                                <button type="button" id="remove-photo" class="remove-photo-btn">×</button>
+                            </div>
+                            <div class="upload-placeholder" id="upload-placeholder">
+                                <div class="upload-icon">📷</div>
+                                <p>写真をアップロードするか、ここにドラッグ&ドロップ</p>
+                                <span class="upload-note">※ 対応形式: JPG, PNG, HEIC</span>
+                            </div>
+                        </div>
+                        <div class="extracted-ingredients" id="extracted-ingredients" style="display: none;">
+                            <h4>📋 認識された食材:</h4>
+                            <div class="ingredients-list" id="ingredients-list"></div>
+                            <button type="button" id="edit-ingredients-btn" class="edit-btn">食材を編集</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 共通入力項目 -->
+                <div class="common-inputs">
+                    <div class="input-group">
+                        <label for="seasoning">使いたい調味料があれば入力してください（オプション）</label>
+                        <input 
+                            type="text" 
+                            id="seasoning" 
+                            placeholder="例: カレー粉, 味噌, オイスターソース"
+                        >
+                    </div>
+
+                    <div class="input-group">
+                        <label for="mood">今日の気分・雰囲気を教えてください（オプション）</label>
+                        <select id="mood-select">
+                            <option value="">選択してください</option>
+                            <option value="さっぱり">さっぱりしたものが食べたい</option>
+                            <option value="こってり">こってりしたものが食べたい</option>
+                            <option value="あたたまる">温まるものが食べたい</option>
+                            <option value="ひんやり">冷たいものが食べたい</option>
+                            <option value="ピリ辛">ピリ辛なものが食べたい</option>
+                            <option value="甘め">甘めの味付けが好み</option>
+                            <option value="ヘルシー">ヘルシーなものが食べたい</option>
+                            <option value="ガッツリ">がっつり食べたい</option>
+                            <option value="時短">簡単・時短で作りたい</option>
+                            <option value="豪華">ちょっと豪華にしたい</option>
+                        </select>
+                        <textarea 
+                            id="mood-text" 
+                            placeholder="その他の要望があれば自由に入力してください&#10;例: 子供が喜ぶもの、お酒に合うもの、ダイエット中なので低カロリー、etc..."
+                            rows="2"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <button id="suggest-btn" class="suggest-button">
+                    <span class="button-text">レシピを提案</span>
+                    <div class="loading" style="display: none;">
+                        <div class="spinner"></div>
+                        <span>提案中...</span>
+                    </div>
+                </button>
+            </section>
+
+            <section class="results-section" id="results-section" style="display: none;">
+                <h2>レシピ提案</h2>
+                
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="japanese">和風</button>
+                    <button class="tab-button" data-tab="western">洋風</button>
+                    <button class="tab-button" data-tab="chinese">中華</button>
+                </div>
+
+                <div class="tab-content">
+                    <div id="japanese-tab" class="tab-panel active">
+                        <div class="recipe-card">
+                            <div id="japanese-recipe" class="recipe-content"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="western-tab" class="tab-panel">
+                        <div class="recipe-card">
+                            <div id="western-recipe" class="recipe-content"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="chinese-tab" class="tab-panel">
+                        <div class="recipe-card">
+                            <div id="chinese-recipe" class="recipe-content"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="error-section" id="error-section" style="display: none;">
+                <div class="error-message">
+                    <h3>エラーが発生しました</h3>
+                    <p id="error-text"></p>
+                    <button id="retry-btn" class="retry-button">再試行</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 冷蔵庫レシピ提案アプリ</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

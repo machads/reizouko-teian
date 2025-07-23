@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(npm start)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(claude mcp:*)",
+      "Bash(set SUPABASE_ACCESS_TOKEN=sbp_ca7888a7ea12d94acec11b5fe48eca7241dd8c9a)",
+      "Bash(claude config show)",
+      "Bash(set SUPABASE_PROJECT_REF=yfjrabvfoccasuzrmmev)",
+      "Bash(node:*)",
+      "Bash(set SUPABASE_URL=https://yfjrabvfoccasuzrmmev.supabase.co)",
+      "Bash(set:*)",
+      "Bash(python:*)",
+      "Bash(where claude)",
+      "Bash(npm test)",
+      "Bash(env)",
+      "Bash(find:*)",
+      "WebFetch(domain:localhost)",
+      "mcp__ide__executeCode",
+      "Bash(pip install:*)",
+      "Bash(del check_supabase_data.py check_table_schema.py test_basic_insert.py add_test_data.py)",
+      "Bash(rm:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}
