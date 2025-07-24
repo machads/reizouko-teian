@@ -419,30 +419,46 @@ main {
 }
 
 .recipe-card {
-    background: #f8f9fa;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 10px;
     padding: 25px;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #4c63d2;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
 }
 
 .recipe-content {
     white-space: pre-wrap;
     line-height: 1.7;
-    color: #444;
+    color: #ffffff;
     font-size: 1rem;
 }
 
 .recipe-content h3 {
-    color: #667eea;
+    color: #ffffff;
     margin-bottom: 15px;
     font-size: 1.4rem;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .recipe-content h4 {
-    color: #555;
+    color: #f0f0f0;
     margin-top: 20px;
     margin-bottom: 10px;
     font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.recipe-content .step {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border-left: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.recipe-content p {
+    margin: 8px 0;
 }
 
 /* 追加食材提案セクション */
@@ -826,6 +842,27 @@ footer {
     
     .recipe-card {
         padding: 30px;
+    }
+}
+
+/* モバイル用の追加スタイル */
+@media (max-width: 768px) {
+    .recipe-card {
+        padding: 20px;
+        margin: 10px 0;
+    }
+    
+    .recipe-content {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    
+    .recipe-content h3 {
+        font-size: 1.2rem;
+    }
+    
+    .recipe-content h4 {
+        font-size: 1rem;
     }
 }
 
