@@ -195,11 +195,15 @@ module.exports = async function handler(req, res) {
         });
         
         if (!process.env.OPENAI_API_KEY) {
+            console.error('OPENAI_API_KEY environment variable not found');
             return res.status(500).json({
                 error: true,
                 message: 'OpenAI APIキーが設定されていません。'
             });
         }
+        
+        console.log('OPENAI_API_KEY found:', !!process.env.OPENAI_API_KEY);
+        console.log('API Key prefix:', process.env.OPENAI_API_KEY.substring(0, 10) + '...');
         
         const openai = new OpenAI({
             apiKey: process.env.OPENAI_API_KEY,
@@ -207,6 +211,7 @@ module.exports = async function handler(req, res) {
         
         const prompt = createRecipePrompt(sanitizedIngredients, sanitizedSeasoning, sanitizedMood);
         
+        console.log('Calling OpenAI API...');
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
@@ -232,6 +237,7 @@ module.exports = async function handler(req, res) {
             max_tokens: 4500,
             temperature: 0.8
         });
+        console.log('OpenAI API call successful');
         
         const aiResponse = completion.choices[0]?.message?.content;
         
@@ -273,14 +279,21 @@ module.exports = async function handler(req, res) {
         
     } catch (error) {
         console.error('Recipe suggestion error:', error);
+        console.error('Error details:', {
+            message: error.message,
+            status: error.status,
+            type: error.type,
+            code: error.code,
+            stack: error.stack
+        });
         
         let errorMessage = '予期しないエラーが発生しました。';
         let statusCode = 500;
         
-        if (error.message.includes('API key')) {
+        if (error.status === 401 || error.message.includes('API key') || error.message.includes('Incorrect API key')) {
             errorMessage = 'OpenAI APIの認証に失敗しました。APIキーを確認してください。';
             statusCode = 401;
-        } else if (error.message.includes('quota') || error.message.includes('billing')) {
+        } else if (error.status === 429 || error.message.includes('quota') || error.message.includes('billing') || error.message.includes('rate limit')) {
             errorMessage = 'OpenAI APIの利用制限に達しました。';
             statusCode = 429;
         } else if (error.message.includes('解析')) {
@@ -294,7 +307,9 @@ module.exports = async function handler(req, res) {
         res.status(statusCode).json({
             error: true,
             message: errorMessage,
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            details: error.message,
+            errorType: error.type || 'unknown',
+            errorStatus: error.status || 'unknown'
         });
     }
 }
