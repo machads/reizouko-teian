@@ -17,13 +17,22 @@ module.exports = function handler(req, res) {
         return res.status(405).json({ error: true, message: `Method ${req.method} not allowed` });
     }
 
-    // デバッグ用：常に未認証を返す
-    console.log('Returning authentication status: false');
+    // クッキーから認証状態を確認
+    const cookies = req.headers.cookie || '';
+    console.log('Received cookies:', cookies);
+    
+    const authenticated = cookies.includes('authenticated=true');
+    const hasSessionToken = cookies.includes('sessionToken=');
+    
+    console.log('Authentication check:', { authenticated, hasSessionToken });
+    
     res.json({
-        authenticated: false,
+        authenticated: authenticated && hasSessionToken,
         debug: {
             method: req.method,
-            headers: req.headers,
+            cookiesReceived: cookies,
+            hasAuthCookie: authenticated,
+            hasSessionToken: hasSessionToken,
             timestamp: new Date().toISOString()
         }
     });

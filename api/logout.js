@@ -14,11 +14,14 @@ module.exports = function handler(req, res) {
         return res.status(405).json({ error: true, message: 'Method not allowed' });
     }
 
-    // クッキーをクリア
+    // クッキーをクリア（モバイル対応）
     res.setHeader('Set-Cookie', [
-        'authenticated=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0',
-        'loginTime=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0'
+        'sessionToken=; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=0',
+        'authenticated=; Path=/; SameSite=Lax; Secure; Max-Age=0',
+        'loginTime=; Path=/; SameSite=Lax; Secure; Max-Age=0'
     ]);
+    
+    console.log('Session cookies cleared');
     
     res.json({
         success: true,

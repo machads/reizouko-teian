@@ -193,8 +193,13 @@
                     const result = await response.json();
 
                     if (result.success) {
+                        console.log('Login successful:', result);
+                        console.log('SessionToken received:', result.sessionToken);
+                        
                         // ログイン成功 - メインアプリにリダイレクト
-                        window.location.href = '/';
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 500); // 少し待ってからリダイレクト
                     } else {
                         this.showError(result.message || 'ログインに失敗しました');
                     }

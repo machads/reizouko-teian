@@ -29,12 +29,26 @@ module.exports = async function handler(req, res) {
             });
         }
 
-        // 簡単なパスワードチェック（デバッグ用）
+        // パスワードチェック
         if (password === 'recipe123') {
             console.log('Password correct');
+            
+            // セッション情報をクッキーに設定（モバイル対応）
+            const sessionToken = `auth_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+            const expires = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2時間後
+            
+            res.setHeader('Set-Cookie', [
+                `sessionToken=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Secure; Expires=${expires.toUTCString()}`,
+                `authenticated=true; Path=/; SameSite=Lax; Secure; Expires=${expires.toUTCString()}`,
+                `loginTime=${Date.now()}; Path=/; SameSite=Lax; Secure; Expires=${expires.toUTCString()}`
+            ]);
+            
+            console.log('Session cookies set:', sessionToken);
+            
             res.json({
                 success: true,
-                message: 'ログインに成功しました'
+                message: 'ログインに成功しました',
+                sessionToken: sessionToken // デバッグ用
             });
         } else {
             console.log('Password incorrect:', password);
