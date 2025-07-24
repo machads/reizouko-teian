@@ -1,9 +1,11 @@
 module.exports = function handler(req, res) {
     // CORS設定
-    res.setHeader('Access-Control-Allow-Origin', 'https://reizouko-teian.vercel.app');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    console.log('Auth-status API called:', req.method);
     
     if (req.method === 'OPTIONS') {
         res.status(200).end();
@@ -11,14 +13,18 @@ module.exports = function handler(req, res) {
     }
     
     if (req.method !== 'GET') {
-        return res.status(405).json({ error: true, message: 'Method not allowed' });
+        console.log('Method not allowed:', req.method);
+        return res.status(405).json({ error: true, message: `Method ${req.method} not allowed` });
     }
 
-    // クッキーから認証状態を確認
-    const cookies = req.headers.cookie || '';
-    const authenticated = cookies.includes('authenticated=true');
-    
+    // デバッグ用：常に未認証を返す
+    console.log('Returning authentication status: false');
     res.json({
-        authenticated: authenticated
+        authenticated: false,
+        debug: {
+            method: req.method,
+            headers: req.headers,
+            timestamp: new Date().toISOString()
+        }
     });
 }
