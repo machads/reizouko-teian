@@ -1,6 +1,8 @@
 class RecipeApp {
     constructor() {
-        this.apiBaseUrl = 'http://localhost:3007/api';
+        this.apiBaseUrl = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3003/api' 
+            : '/api';
         this.currentInputMethod = 'text';
         this.uploadedPhoto = null;
         this.extractedIngredients = [];

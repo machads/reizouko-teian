@@ -114,7 +114,9 @@
     <script>
         class LoginApp {
             constructor() {
-                this.apiBaseUrl = 'http://localhost:3007/api';
+                this.apiBaseUrl = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:3003/api' 
+                    : '/api';
                 this.init();
             }
 
