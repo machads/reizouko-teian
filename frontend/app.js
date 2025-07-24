@@ -1,6 +1,6 @@
 class RecipeApp {
     constructor() {
-        this.apiBaseUrl = 'http://localhost:3000/api';
+        this.apiBaseUrl = 'http://localhost:3003/api';
         this.currentInputMethod = 'text';
         this.uploadedPhoto = null;
         this.extractedIngredients = [];
@@ -368,20 +368,25 @@ class RecipeApp {
         
         recipeTypes.forEach(type => {
             if (recipes[type]) {
-                const match = recipes[type].match(/【追加食材提案】([\s\S]*?)$/);
-                if (match) {
-                    const additionalText = match[1].trim();
-                    const lines = additionalText.split('\n');
-                    
-                    lines.forEach(line => {
-                        const trimmedLine = line.trim();
-                        if (trimmedLine.startsWith('・')) {
-                            const suggestion = trimmedLine.substring(1).trim();
-                            if (suggestion && !suggestions.includes(suggestion)) {
-                                suggestions.push(suggestion);
+                // レシピがオブジェクトの場合はcontentプロパティを使用
+                const recipeText = typeof recipes[type] === 'string' ? recipes[type] : recipes[type].content;
+                
+                if (recipeText) {
+                    const match = recipeText.match(/【追加食材提案】([\s\S]*?)$/);
+                    if (match) {
+                        const additionalText = match[1].trim();
+                        const lines = additionalText.split('\n');
+                        
+                        lines.forEach(line => {
+                            const trimmedLine = line.trim();
+                            if (trimmedLine.startsWith('・')) {
+                                const suggestion = trimmedLine.substring(1).trim();
+                                if (suggestion && !suggestions.includes(suggestion)) {
+                                    suggestions.push(suggestion);
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             }
         });
@@ -415,7 +420,31 @@ class RecipeApp {
         return `<ul>${listItems}</ul>`;
     }
 
-    formatRecipe(recipeText) {
+    formatRecipe(recipe) {
+        if (typeof recipe === 'string') {
+            // 従来の文字列形式
+            return this.formatRecipeText(recipe);
+        } else if (recipe && typeof recipe === 'object') {
+            // 新しいオブジェクト形式（画像付き）
+            let result = '';
+            
+            // 画像があれば表示
+            if (recipe.image) {
+                result += `<div class="recipe-image">
+                    <img src="${recipe.image}" alt="${recipe.title || 'レシピ画像'}" loading="lazy">
+                </div>`;
+            }
+            
+            // レシピテキストをフォーマット
+            result += this.formatRecipeText(recipe.content || recipe);
+            
+            return result;
+        }
+        
+        return '<p>レシピが取得できませんでした。</p>';
+    }
+
+    formatRecipeText(recipeText) {
         if (!recipeText) return '<p>レシピが取得できませんでした。</p>';
 
         let formatted = recipeText.replace(/【([^】]+)】/g, '<h3>$1</h3>');

@@ -348,7 +348,7 @@ app.post('/api/suggest-recipes', recipeLimiter, recipeValidationRules, handleVal
         const prompt = createRecipePrompt(ingredients, requiredSeasoning, moodRequest);
         
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-4o-mini",
             messages: [
                 {
                     role: "system",
@@ -372,6 +372,9 @@ app.post('/api/suggest-recipes', recipeLimiter, recipeValidationRules, handleVal
         console.log('AI Response received, length:', aiResponse.length);
         
         const recipes = parseRecipes(aiResponse);
+        
+        // 画像生成は無効化
+        // レシピはシンプルな文字列形式で返す
         
         if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
             await saveRecipeToSupabase(ingredients, requiredSeasoning, moodRequest, recipes);
