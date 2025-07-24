@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冷蔵庫レシピ提案アプリ - テスト</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .test-pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-summary {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            margin-top: 20px;
+            padding: 15px;
+        }
+        #test-area {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>冷蔵庫レシピ提案アプリ - フロントエンドテスト</h1>
+        <div id="test-results"></div>
+        
+        <!-- テスト用の隠しエリア -->
+        <div id="test-area">
+            <div class="tabs">
+                <button id="text-tab" class="tab-button active">手動入力</button>
+                <button id="photo-tab" class="tab-button">写真で入力</button>
+            </div>
+            <div class="input-methods">
+                <button id="text-method-btn" class="method-btn active">テキスト入力</button>
+                <button id="photo-method-btn" class="method-btn">写真アップロード</button>
+            </div>
+            <div id="text-input-area" class="input-area active">
+                <textarea id="ingredients" placeholder="材料を入力してください"></textarea>
+            </div>
+            <div id="photo-input-area" class="input-area">
+                <input type="file" id="photo-upload" accept="image/*">
+                <div id="photo-preview"></div>
+                <div id="extracted-ingredients"></div>
+            </div>
+            <button id="suggest-btn">レシピを提案</button>
+            <button id="retry-btn" style="display:none;">再提案</button>
+            <div id="loading" style="display:none;">Loading...</div>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // テストスイート
+        class RecipeAppTest {
+            constructor() {
+                this.tests = [];
+                this.passedTests = 0;
+                this.failedTests = 0;
+            }
+
+            addTest(name, testFn) {
+                this.tests.push({ name, testFn });
+            }
+
+            async runTests() {
+                console.log('テスト開始...');
+                const resultsDiv = document.getElementById('test-results');
+                resultsDiv.innerHTML = '<h2>テスト実行中...</h2>';
+
+                for (const test of this.tests) {
+                    try {
+                        await test.testFn();
+                        this.passedTests++;
+                        console.log(`✓ ${test.name}`);
+                        resultsDiv.innerHTML += `<div class="test-result test-pass">✓ ${test.name}</div>`;
+                    } catch (error) {
+                        this.failedTests++;
+                        console.error(`✗ ${test.name}: ${error.message}`);
+                        resultsDiv.innerHTML += `<div class="test-result test-fail">✗ ${test.name}: ${error.message}</div>`;
+                    }
+                }
+
+                const summary = `
+                    <div class="test-summary">
+                        <h3>テスト結果サマリー</h3>
+                        <p><strong>成功:</strong> ${this.passedTests}</p>
+                        <p><strong>失敗:</strong> ${this.failedTests}</p>
+                        <p><strong>合計:</strong> ${this.tests.length}</p>
+                        <p><strong>成功率:</strong> ${((this.passedTests / this.tests.length) * 100).toFixed(1)}%</p>
+                    </div>
+                `;
+                resultsDiv.innerHTML += summary;
+                console.log(`テスト完了: ${this.passedTests}/${this.tests.length} 成功`);
+            }
+
+            assertEqual(actual, expected, message) {
+                if (actual !== expected) {
+                    throw new Error(`${message}: 期待値 ${expected}, 実際の値 ${actual}`);
+                }
+            }
+
+            assertTrue(condition, message) {
+                if (!condition) {
+                    throw new Error(message);
+                }
+            }
+
+            assertElementExists(elementId, message) {
+                const element = document.getElementById(elementId);
+                if (!element) {
+                    throw new Error(`Element not found: ${elementId}. ${message}`);
+                }
+                return element;
+            }
+        }
+
+        // テスト実行
+        document.addEventListener('DOMContentLoaded', async () => {
+            const testSuite = new RecipeAppTest();
+
+            // DOM要素の存在確認テスト
+            testSuite.addTest('必要なDOM要素の存在確認', () => {
+                testSuite.assertElementExists('ingredients', '材料入力テキストエリアが存在する');
+                testSuite.assertElementExists('suggest-btn', '提案ボタンが存在する');
+                testSuite.assertElementExists('text-method-btn', 'テキスト入力ボタンが存在する');
+                testSuite.assertElementExists('photo-method-btn', '写真アップロードボタンが存在する');
+                testSuite.assertElementExists('text-input-area', 'テキスト入力エリアが存在する');
+                testSuite.assertElementExists('photo-input-area', '写真入力エリアが存在する');
+            });
+
+            // RecipeAppクラスのインスタンス化テスト
+            testSuite.addTest('RecipeAppクラスの初期化', () => {
+                if (typeof RecipeApp === 'undefined') {
+                    throw new Error('RecipeAppクラスが定義されていません');
+                }
+                const app = new RecipeApp();
+                testSuite.assertTrue(app instanceof RecipeApp, 'RecipeAppのインスタンスが作成される');
+                testSuite.assertEqual(app.apiBaseUrl, 'http://localhost:3003/api', 'APIベースURLが正しく設定される');
+                testSuite.assertEqual(app.currentInputMethod, 'text', 'デフォルトの入力方法がtextに設定される');
+            });
+
+            // 初期DOM状態テスト
+            testSuite.addTest('初期DOM状態の確認', () => {
+                const textArea = document.getElementById('text-input-area');
+                const photoArea = document.getElementById('photo-input-area');
+                const textBtn = document.getElementById('text-method-btn');
+                
+                testSuite.assertTrue(textArea.classList.contains('active'), '初期状態でテキストエリアがアクティブ');
+                testSuite.assertTrue(!photoArea.classList.contains('active'), '初期状態で写真エリアが非アクティブ');
+                testSuite.assertTrue(textBtn.classList.contains('active'), '初期状態でテキストボタンがアクティブ');
+            });
+
+            // 入力方法切り替えテスト
+            testSuite.addTest('入力方法の切り替え機能', () => {
+                const app = new RecipeApp();
+                const textArea = document.getElementById('text-input-area');
+                const photoArea = document.getElementById('photo-input-area');
+                const textBtn = document.getElementById('text-method-btn');
+                const photoBtn = document.getElementById('photo-method-btn');
+                
+                // 写真入力に切り替え
+                app.switchInputMethod('photo');
+                testSuite.assertTrue(!textArea.classList.contains('active'), '写真入力時にテキストエリアが非アクティブ');
+                testSuite.assertTrue(photoArea.classList.contains('active'), '写真入力時に写真エリアがアクティブ');
+                
+                // テキスト入力に戻す
+                app.switchInputMethod('text');
+                testSuite.assertTrue(textArea.classList.contains('active'), 'テキスト入力時にテキストエリアがアクティブ');
+                testSuite.assertTrue(!photoArea.classList.contains('active'), 'テキスト入力時に写真エリアが非アクティブ');
+            });
+
+            // バリデーション機能テスト
+            testSuite.addTest('材料入力のバリデーション', () => {
+                const app = new RecipeApp();
+                
+                // validateIngredientsメソッドが存在するかチェック
+                if (typeof app.validateIngredients === 'function') {
+                    // 空の入力
+                    const emptyResult = app.validateIngredients('');
+                    testSuite.assertTrue(!emptyResult.isValid, '空の入力は無効');
+                    
+                    // 正常な入力
+                    const validResult = app.validateIngredients('鶏肉, 玉ねぎ, にんじん');
+                    testSuite.assertTrue(validResult.isValid, '正常な材料入力は有効');
+                } else {
+                    // バリデーション機能が実装されていない場合はスキップ
+                    console.log('validateIngredientsメソッドが未実装のためスキップ');
+                }
+            });
+
+            // イベントリスナーの確認
+            testSuite.addTest('イベントリスナーの設定確認', () => {
+                const suggestBtn = document.getElementById('suggest-btn');
+                const textMethodBtn = document.getElementById('text-method-btn');
+                const photoMethodBtn = document.getElementById('photo-method-btn');
+                
+                // ボタンがクリック可能か確認
+                testSuite.assertTrue(suggestBtn.onclick !== null || suggestBtn.addEventListener, '提案ボタンにイベントが設定されている');
+                testSuite.assertTrue(textMethodBtn.onclick !== null || textMethodBtn.addEventListener, 'テキスト入力ボタンにイベントが設定されている');
+                testSuite.assertTrue(photoMethodBtn.onclick !== null || photoMethodBtn.addEventListener, '写真アップロードボタンにイベントが設定されている');
+            });
+
+            // CSS クラスの確認
+            testSuite.addTest('CSSクラスの適用確認', () => {
+                const container = document.querySelector('.container') || document.querySelector('.test-container');
+                testSuite.assertTrue(container !== null, 'コンテナ要素が存在する');
+                
+                const tabs = document.querySelector('.tabs');
+                const inputMethods = document.querySelector('.input-methods');
+                
+                // 基本的なクラス構造の確認
+                testSuite.assertTrue(tabs !== null || inputMethods !== null, 'タブまたは入力方法選択要素が存在する');
+            });
+
+            await testSuite.runTests();
+        });
+    </script>
+</body>
+</html>

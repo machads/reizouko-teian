@@ -170,8 +170,11 @@
                 }
 
                 // デバッグ情報
+                console.log('Current hostname:', window.location.hostname);
+                console.log('Current origin:', window.location.origin);
                 console.log('API Base URL:', this.apiBaseUrl);
                 console.log('Login URL:', `${this.apiBaseUrl}/login`);
+                console.log('User Agent:', navigator.userAgent);
 
                 // ローディング状態
                 this.setLoading(true);

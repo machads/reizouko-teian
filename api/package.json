@@ -1,0 +1,10 @@
+{
+  "name": "reizouko-teian-api",
+  "version": "1.0.0",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.52.0",
+    "bcrypt": "^6.0.0",
+    "openai": "^4.77.3",
+    "multiparty": "^4.2.3"
+  }
+}
