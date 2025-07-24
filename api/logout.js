@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
     // CORS設定
     res.setHeader('Access-Control-Allow-Origin', 'https://reizouko-teian.vercel.app');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
