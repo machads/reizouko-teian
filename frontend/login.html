@@ -169,6 +169,10 @@
                     return;
                 }
 
+                // デバッグ情報
+                console.log('API Base URL:', this.apiBaseUrl);
+                console.log('Login URL:', `${this.apiBaseUrl}/login`);
+
                 // ローディング状態
                 this.setLoading(true);
                 errorDiv.style.display = 'none';

@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
+const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
 const sharp = require('sharp');
@@ -44,14 +45,17 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false
 }));
 
-// セッション設定
+// セッション設定の強化
 app.use(session({
-    secret: 'recipe-app-secret-key-1223', // セッションキー
+    secret: process.env.SESSION_SECRET || 'fallback-dev-secret-key',
     resave: false,
     saveUninitialized: false,
+    name: 'sessionId', // デフォルトのconnect.sidから変更
     cookie: {
-        secure: false, // HTTPSでない場合はfalse
-        maxAge: 24 * 60 * 60 * 1000 // 24時間
+        secure: process.env.NODE_ENV === 'production', // 本番環境ではHTTPS必須
+        httpOnly: true, // XSS攻撃を防ぐ
+        maxAge: 2 * 60 * 60 * 1000, // 2時間に短縮
+        sameSite: 'strict' // CSRF攻撃を防ぐ
     }
 }));
 
@@ -102,19 +106,35 @@ const uploadLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+// ログイン試行制限
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15分
+    max: 5, // 最大5回のログイン試行/15分
+    message: {
+        error: true,
+        message: 'ログイン試行回数が上限に達しました。15分後にお試しください。'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true // 成功したリクエストはカウントしない
+});
+
 app.use(generalLimiter);
 
 // CORS設定
-const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:8080',
-    'http://localhost:3000',
-    'http://localhost:9000',
-    'http://localhost:8888',
-    'http://127.0.0.1:8080',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:9000',
-    'http://127.0.0.1:8888'
-];
+// CORS設定の厳格化
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+    ? [process.env.FRONTEND_URL] // 本番環境では指定URLのみ
+    : [
+        'http://localhost:8081',
+        'http://localhost:3000',
+        'http://localhost:5000',
+        'http://localhost:8080',
+        'http://127.0.0.1:8081',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5000',
+        'http://127.0.0.1:8080'
+    ];
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -387,10 +407,10 @@ async function saveRecipeToSupabase(ingredients, requiredSeasoning, moodRequest,
     }
 }
 
-// ログインエンドポイント
-app.post('/api/login', [
+// ログインエンドポイント（レート制限付き）
+app.post('/api/login', loginLimiter, [
     body('password').notEmpty().withMessage('パスワードが必要です')
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -402,17 +422,40 @@ app.post('/api/login', [
 
     const { password } = req.body;
     
-    // パスワードチェック
-    if (password === '1223') {
-        req.session.authenticated = true;
-        res.json({
-            success: true,
-            message: 'ログインに成功しました'
-        });
-    } else {
-        res.status(401).json({
+    try {
+        // パスワードハッシュと比較
+        const passwordHash = process.env.APP_PASSWORD_HASH;
+        const isValid = await bcrypt.compare(password, passwordHash);
+        
+        if (!passwordHash) {
+            console.error('APP_PASSWORD_HASH is not configured');
+            return res.status(500).json({
+                error: true,
+                message: 'サーバー設定エラーです'
+            });
+        }
+
+        if (isValid) {
+            req.session.authenticated = true;
+            req.session.loginTime = Date.now();
+            res.json({
+                success: true,
+                message: 'ログインに成功しました'
+            });
+        } else {
+            // ログイン試行の記録
+            console.warn(`Failed login attempt from IP: ${req.ip} at ${new Date().toISOString()}`);
+            
+            res.status(401).json({
+                error: true,
+                message: 'パスワードが正しくありません'
+            });
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({
             error: true,
-            message: 'パスワードが間違っています'
+            message: 'サーバーエラーが発生しました'
         });
     }
 });
@@ -433,10 +476,11 @@ app.post('/api/logout', (req, res) => {
     });
 });
 
-// 認証状態確認エンドポイント
-app.get('/api/auth-status', (req, res) => {
+// 認証状態確認エンドポイント（レート制限付き）
+app.get('/api/auth-status', generalLimiter, (req, res) => {
     res.json({
-        authenticated: !!req.session.authenticated
+        authenticated: !!req.session.authenticated,
+        // セッション情報の漏洩を防ぐため、認証状態のみ返す
     });
 });
 
@@ -466,11 +510,14 @@ app.post('/api/upload-photo', requireAuth, uploadLimiter, upload.single('photo')
             success: true,
             ingredients: recognizedIngredients,
             message: `${recognizedIngredients.length}個の食材を認識しました`,
-            debug: {
-                imageSize: `${req.file.size} bytes`,
-                optimizedSize: `${optimizedBuffer.length} bytes`,
-                timestamp: new Date().toISOString()
-            }
+            // デバッグ情報は開発環境のみ
+            ...(process.env.NODE_ENV === 'development' && {
+                debug: {
+                    imageSize: `${req.file.size} bytes`,
+                    optimizedSize: `${optimizedBuffer.length} bytes`,
+                    timestamp: new Date().toISOString()
+                }
+            })
         });
 
     } catch (error) {
@@ -568,12 +615,17 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-app.get('/api/test-config', (req, res) => {
+// 設定確認エンドポイント（開発環境のみ、認証必須）
+app.get('/api/config', requireAuth, (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ error: 'Not found' });
+    }
+    
     const config = {
         openaiConfigured: !!process.env.OPENAI_API_KEY,
         supabaseConfigured: !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY),
-        port: PORT,
         environment: process.env.NODE_ENV || 'development'
+        // ポート情報は除外（情報漏洩防止）
     };
     
     res.json(config);
@@ -599,7 +651,7 @@ app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
     console.log(`📝 API endpoint: http://localhost:${PORT}/api/suggest-recipes`);
     console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
-    console.log(`⚙️  Config check: http://localhost:${PORT}/api/test-config`);
+    console.log('🔒 Security: All endpoints protected with authentication');
     
     if (!process.env.OPENAI_API_KEY) {
         console.warn('⚠️  Warning: OPENAI_API_KEY is not set');
