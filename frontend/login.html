@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン - おうちの残り物で料理提案アプリ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-form {
+            text-align: center;
+        }
+        
+        .login-title {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .login-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .login-button:hover {
+            background: #2980b9;
+        }
+        
+        .login-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            margin: 10px 0;
+            padding: 10px;
+            background: #fadbd8;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-form">
+            <h1 class="login-title">🥘 ログイン</h1>
+            <p>アプリを利用するにはパスワードを入力してください</p>
+            
+            <div class="error-message" id="error-message"></div>
+            
+            <form id="login-form">
+                <input 
+                    type="password" 
+                    id="password" 
+                    class="login-input" 
+                    placeholder="パスワードを入力"
+                    required
+                >
+                <button type="submit" class="login-button" id="login-button">
+                    <span id="button-text">ログイン</span>
+                    <div class="loading-spinner" id="loading-spinner"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class LoginApp {
+            constructor() {
+                this.apiBaseUrl = 'http://localhost:3007/api';
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.checkAuthStatus();
+            }
+
+            bindEvents() {
+                const form = document.getElementById('login-form');
+                const passwordInput = document.getElementById('password');
+
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.handleLogin();
+                    }
+                });
+            }
+
+            async checkAuthStatus() {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/auth-status`, {
+                        credentials: 'include'
+                    });
+                    const result = await response.json();
+                    
+                    if (result.authenticated) {
+                        // 既にログイン済みの場合はメインアプリにリダイレクト
+                        window.location.href = '/';
+                    }
+                } catch (error) {
+                    console.error('認証状態確認エラー:', error);
+                }
+            }
+
+            async handleLogin() {
+                const password = document.getElementById('password').value;
+                const errorDiv = document.getElementById('error-message');
+                const loginButton = document.getElementById('login-button');
+                const buttonText = document.getElementById('button-text');
+                const loadingSpinner = document.getElementById('loading-spinner');
+
+                if (!password) {
+                    this.showError('パスワードを入力してください');
+                    return;
+                }
+
+                // ローディング状態
+                this.setLoading(true);
+                errorDiv.style.display = 'none';
+
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({ password })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // ログイン成功 - メインアプリにリダイレクト
+                        window.location.href = '/';
+                    } else {
+                        this.showError(result.message || 'ログインに失敗しました');
+                    }
+                } catch (error) {
+                    console.error('ログインエラー:', error);
+                    this.showError('接続エラーが発生しました');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            showError(message) {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+
+            setLoading(isLoading) {
+                const loginButton = document.getElementById('login-button');
+                const buttonText = document.getElementById('button-text');
+                const loadingSpinner = document.getElementById('loading-spinner');
+
+                if (isLoading) {
+                    loginButton.disabled = true;
+                    buttonText.style.display = 'none';
+                    loadingSpinner.style.display = 'block';
+                } else {
+                    loginButton.disabled = false;
+                    buttonText.style.display = 'inline';
+                    loadingSpinner.style.display = 'none';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new LoginApp();
+        });
+    </script>
+</body>
+</html>

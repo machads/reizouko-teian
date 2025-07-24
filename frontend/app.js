@@ -1,17 +1,80 @@
 class RecipeApp {
     constructor() {
-        this.apiBaseUrl = 'http://localhost:3003/api';
+        this.apiBaseUrl = 'http://localhost:3007/api';
         this.currentInputMethod = 'text';
         this.uploadedPhoto = null;
         this.extractedIngredients = [];
         this.init();
     }
 
-    init() {
+    async init() {
+        // 認証チェック
+        const isAuthenticated = await this.checkAuthStatus();
+        if (!isAuthenticated) {
+            window.location.href = '/login.html';
+            return;
+        }
+
         this.bindEvents();
         this.initTabs();
         this.initInputMethods();
         this.initPhotoUpload();
+        this.addLogoutButton();
+    }
+
+    async checkAuthStatus() {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/auth-status`, {
+                credentials: 'include'
+            });
+            const result = await response.json();
+            return result.authenticated;
+        } catch (error) {
+            console.error('認証状態確認エラー:', error);
+            return false;
+        }
+    }
+
+    addLogoutButton() {
+        // ヘッダーにログアウトボタンを追加
+        const header = document.querySelector('header');
+        if (header && !document.getElementById('logout-btn')) {
+            const logoutBtn = document.createElement('button');
+            logoutBtn.id = 'logout-btn';
+            logoutBtn.textContent = 'ログアウト';
+            logoutBtn.style.cssText = `
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                padding: 8px 16px;
+                background: #e74c3c;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 14px;
+            `;
+            logoutBtn.addEventListener('click', () => this.handleLogout());
+            header.style.position = 'relative';
+            header.appendChild(logoutBtn);
+        }
+    }
+
+    async handleLogout() {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/logout`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                window.location.href = '/login.html';
+            } else {
+                console.error('ログアウトに失敗しました');
+            }
+        } catch (error) {
+            console.error('ログアウトエラー:', error);
+        }
     }
 
     bindEvents() {
@@ -145,19 +208,52 @@ class RecipeApp {
     }
 
     async extractIngredientsFromPhoto(file) {
-        // 現在は仮の実装（デモ用）
-        // 実際にはGoogle Cloud Vision APIやOpenAI Vision APIを使用
-        const demoIngredients = ['鶏肉', 'キャベツ', '人参', '玉ねぎ', '卵', 'じゃがいも'];
-        
-        // ローディング表示
-        this.setLoadingState(true, '写真から食材を認識中...');
-        
-        // 仮の遅延
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        this.extractedIngredients = demoIngredients;
-        this.displayExtractedIngredients();
-        this.setLoadingState(false);
+        try {
+            // ローディング表示
+            this.setLoadingState(true, '写真から食材を認識中...');
+            
+            // FormDataでファイルをアップロード
+            const formData = new FormData();
+            formData.append('photo', file);
+            
+            console.log('画像をアップロードしています...', file.name, file.size, 'bytes');
+            
+            const response = await fetch(`${this.apiBaseUrl}/upload-photo`, {
+                method: 'POST',
+                body: formData,
+                credentials: 'include',
+                headers: {
+                    // Content-Typeは設定しない（ブラウザが自動でmultipart/form-dataに設定）
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            console.log('画像認識結果:', result);
+            
+            if (result.success && result.ingredients) {
+                this.extractedIngredients = result.ingredients;
+                this.displayExtractedIngredients();
+                
+                // 成功メッセージを表示
+                this.showMessage(result.message || `${result.ingredients.length}個の食材を認識しました`, 'success');
+            } else {
+                throw new Error(result.message || '画像の認識に失敗しました');
+            }
+            
+        } catch (error) {
+            console.error('画像認識エラー:', error);
+            this.showMessage(`画像認識エラー: ${error.message}`, 'error');
+            
+            // エラー時はデフォルトの食材を表示
+            this.extractedIngredients = ['認識に失敗しました'];
+            this.displayExtractedIngredients();
+        } finally {
+            this.setLoadingState(false);
+        }
     }
 
     displayExtractedIngredients() {
@@ -285,6 +381,7 @@ class RecipeApp {
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify(requestData)
             });
 
@@ -507,6 +604,66 @@ class RecipeApp {
 
     hideError() {
         document.getElementById('error-section').style.display = 'none';
+    }
+
+    showMessage(message, type = 'info') {
+        // メッセージ表示用の要素を作成または取得
+        let messageContainer = document.getElementById('message-container');
+        if (!messageContainer) {
+            messageContainer = document.createElement('div');
+            messageContainer.id = 'message-container';
+            messageContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+                max-width: 400px;
+            `;
+            document.body.appendChild(messageContainer);
+        }
+
+        // メッセージ要素を作成
+        const messageElement = document.createElement('div');
+        messageElement.style.cssText = `
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease-out;
+            background-color: ${type === 'error' ? '#e74c3c' : type === 'success' ? '#27ae60' : '#3498db'};
+        `;
+        messageElement.textContent = message;
+
+        // アニメーション用CSS（まだ追加されていない場合）
+        if (!document.getElementById('message-animation-styles')) {
+            const styleSheet = document.createElement('style');
+            styleSheet.id = 'message-animation-styles';
+            styleSheet.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(styleSheet);
+        }
+
+        messageContainer.appendChild(messageElement);
+
+        // 5秒後に自動で削除
+        setTimeout(() => {
+            messageElement.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.parentNode.removeChild(messageElement);
+                }
+            }, 300);
+        }, 5000);
     }
 }
 

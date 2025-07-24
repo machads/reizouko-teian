@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const session = require('express-session');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
 const sharp = require('sharp');
@@ -31,7 +32,7 @@ app.use(helmet({
         directives: {
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
-            scriptSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-eval'"],
             imgSrc: ["'self'", "data:", "blob:"],
             connectSrc: ["'self'"],
             fontSrc: ["'self'"],
@@ -42,6 +43,30 @@ app.use(helmet({
     },
     crossOriginEmbedderPolicy: false
 }));
+
+// セッション設定
+app.use(session({
+    secret: 'recipe-app-secret-key-1223', // セッションキー
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false, // HTTPSでない場合はfalse
+        maxAge: 24 * 60 * 60 * 1000 // 24時間
+    }
+}));
+
+// 認証チェックミドルウェア
+const requireAuth = (req, res, next) => {
+    if (req.session.authenticated) {
+        next();
+    } else {
+        res.status(401).json({
+            error: true,
+            message: '認証が必要です',
+            requireAuth: true
+        });
+    }
+};
 
 // レート制限
 const generalLimiter = rateLimit({
@@ -83,8 +108,12 @@ app.use(generalLimiter);
 const allowedOrigins = [
     process.env.FRONTEND_URL || 'http://localhost:8080',
     'http://localhost:3000',
+    'http://localhost:9000',
+    'http://localhost:8888',
     'http://127.0.0.1:8080',
-    'http://127.0.0.1:3000'
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:9000',
+    'http://127.0.0.1:8888'
 ];
 
 app.use(cors({
@@ -139,6 +168,70 @@ function sanitizeInput(input) {
         .replace(/[^\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAFa-zA-Z0-9\s,、。！？]/g, '') // 許可文字のみ
         .trim()
         .slice(0, 500); // 長さ制限
+}
+
+// OpenAI Vision APIを使った画像から食材認識
+async function analyzeImageIngredients(imageBuffer) {
+    try {
+        // 画像をbase64エンコード
+        const base64Image = imageBuffer.toString('base64');
+        
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    role: "user",
+                    content: [
+                        {
+                            type: "text",
+                            text: `この画像を見て、写っている食材を認識してください。以下の条件に従ってください：
+
+1. 食材のみを認識し、調理済みの料理は除外してください
+2. 野菜、肉類、魚類、果物、乳製品、調味料など、料理に使える食材を対象とします
+3. 結果は日本語の食材名で、カンマ区切りで返してください
+4. 同じ種類の食材が複数見える場合は1つだけ記載してください
+5. 不明瞭な場合は推測で構いません
+6. 最大20個までに制限してください
+
+例: トマト,玉ねぎ,鶏肉,じゃがいも
+
+食材名のみを返してください（他の説明は不要）:`
+                        },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: `data:image/jpeg;base64,${base64Image}`
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 200
+        });
+
+        const recognizedText = response.choices[0]?.message?.content?.trim();
+        
+        if (!recognizedText) {
+            throw new Error('画像認識結果が空です');
+        }
+
+        // カンマ区切りで分割し、前後の空白を除去
+        const ingredients = recognizedText
+            .split(',')
+            .map(item => item.trim())
+            .filter(item => item.length > 0)
+            .slice(0, 20); // 安全のため20個に制限
+
+        console.log('画像認識結果:', ingredients);
+        return ingredients;
+
+    } catch (error) {
+        console.error('画像認識エラー:', error);
+        
+        // エラーの場合はデフォルトの食材を返す
+        const defaultIngredients = ['不明な食材', '画像認識に失敗しました'];
+        return defaultIngredients;
+    }
 }
 
 // バリデーションルール
@@ -294,8 +387,61 @@ async function saveRecipeToSupabase(ingredients, requiredSeasoning, moodRequest,
     }
 }
 
-// 写真アップロード用エンドポイント
-app.post('/api/upload-photo', uploadLimiter, upload.single('photo'), async (req, res) => {
+// ログインエンドポイント
+app.post('/api/login', [
+    body('password').notEmpty().withMessage('パスワードが必要です')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            error: true,
+            message: 'バリデーションエラー',
+            details: errors.array()
+        });
+    }
+
+    const { password } = req.body;
+    
+    // パスワードチェック
+    if (password === '1223') {
+        req.session.authenticated = true;
+        res.json({
+            success: true,
+            message: 'ログインに成功しました'
+        });
+    } else {
+        res.status(401).json({
+            error: true,
+            message: 'パスワードが間違っています'
+        });
+    }
+});
+
+// ログアウトエンドポイント
+app.post('/api/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({
+                error: true,
+                message: 'ログアウトに失敗しました'
+            });
+        }
+        res.json({
+            success: true,
+            message: 'ログアウトしました'
+        });
+    });
+});
+
+// 認証状態確認エンドポイント
+app.get('/api/auth-status', (req, res) => {
+    res.json({
+        authenticated: !!req.session.authenticated
+    });
+});
+
+// 写真アップロード用エンドポイント（認証必須）
+app.post('/api/upload-photo', requireAuth, uploadLimiter, upload.single('photo'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -310,17 +456,21 @@ app.post('/api/upload-photo', uploadLimiter, upload.single('photo'), async (req,
             .jpeg({ quality: 80 })
             .toBuffer();
 
-        // 今はデモ用の食材認識結果を返す
-        // 実際にはGoogle Cloud Vision APIやOpenAI Vision APIを使用
-        const demoIngredients = ['鶏肉', 'キャベツ', '人参', '玉ねぎ', '卵', 'じゃがいも'];
+        // OpenAI Vision APIを使って実際の画像から食材を認識
+        console.log('画像解析を開始します...');
+        const recognizedIngredients = await analyzeImageIngredients(optimizedBuffer);
         
-        // 実際の画像認識処理をシミュレート
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('認識された食材:', recognizedIngredients);
 
         res.json({
             success: true,
-            ingredients: demoIngredients,
-            message: '食材を認識しました'
+            ingredients: recognizedIngredients,
+            message: `${recognizedIngredients.length}個の食材を認識しました`,
+            debug: {
+                imageSize: `${req.file.size} bytes`,
+                optimizedSize: `${optimizedBuffer.length} bytes`,
+                timestamp: new Date().toISOString()
+            }
         });
 
     } catch (error) {
@@ -332,7 +482,7 @@ app.post('/api/upload-photo', uploadLimiter, upload.single('photo'), async (req,
     }
 });
 
-app.post('/api/suggest-recipes', recipeLimiter, recipeValidationRules, handleValidationErrors, async (req, res) => {
+app.post('/api/suggest-recipes', requireAuth, recipeLimiter, recipeValidationRules, handleValidationErrors, async (req, res) => {
     try {
         const { ingredients, requiredSeasoning, moodRequest } = req.body;
         
