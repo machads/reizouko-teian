@@ -207,12 +207,17 @@ module.exports = async function handler(req, res) {
         
         const openai = new OpenAI({
             apiKey: process.env.OPENAI_API_KEY,
+            timeout: 30000, // 30秒タイムアウト
         });
         
         const prompt = createRecipePrompt(sanitizedIngredients, sanitizedSeasoning, sanitizedMood);
         
         console.log('Calling OpenAI API...');
-        const completion = await openai.chat.completions.create({
+        console.log('Prompt length:', prompt.length);
+        
+        let completion;
+        try {
+            completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
                 {
@@ -238,6 +243,16 @@ module.exports = async function handler(req, res) {
             temperature: 0.8
         });
         console.log('OpenAI API call successful');
+        } catch (openaiError) {
+            console.error('OpenAI API specific error:', {
+                message: openaiError.message,
+                status: openaiError.status,
+                type: openaiError.type,
+                code: openaiError.code,
+                cause: openaiError.cause
+            });
+            throw openaiError;
+        }
         
         const aiResponse = completion.choices[0]?.message?.content;
         
@@ -299,9 +314,14 @@ module.exports = async function handler(req, res) {
         } else if (error.message.includes('解析')) {
             errorMessage = 'レシピの生成に失敗しました。もう一度お試しください。';
             statusCode = 422;
-        } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-            errorMessage = 'OpenAI APIに接続できませんでした。インターネット接続を確認してください。';
+        } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET' || 
+                   error.message.includes('Connection error') || error.message.includes('network') || 
+                   error.message.includes('timeout') || error.cause?.code === 'ENOTFOUND') {
+            errorMessage = 'OpenAI APIとの接続に問題があります。しばらく待ってから再試行してください。';
             statusCode = 503;
+        } else if (error.status === 500 || error.status >= 500) {
+            errorMessage = 'OpenAI APIサーバーに問題があります。しばらく待ってから再試行してください。';
+            statusCode = 502;
         }
         
         res.status(statusCode).json({
