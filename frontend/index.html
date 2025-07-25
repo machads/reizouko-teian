@@ -66,6 +66,16 @@
 
                 <!-- 共通入力項目 -->
                 <div class="common-inputs">
+                    <!-- ジャンル選択 -->
+                    <div class="input-group">
+                        <label>料理のジャンルを選択してください</label>
+                        <div class="genre-selector">
+                            <button type="button" class="genre-btn active" data-genre="japanese">🍱 和風</button>
+                            <button type="button" class="genre-btn" data-genre="western">🍝 洋風</button>
+                            <button type="button" class="genre-btn" data-genre="chinese">🥢 中華</button>
+                        </div>
+                    </div>
+
                     <div class="input-group">
                         <label for="seasoning">使いたい調味料があれば入力してください（オプション）</label>
                         <input 
@@ -108,31 +118,11 @@
             </section>
 
             <section class="results-section" id="results-section" style="display: none;">
-                <h2>レシピ提案</h2>
+                <h2 id="recipe-title">レシピ提案</h2>
                 
-                <div class="tabs">
-                    <button class="tab-button active" data-tab="japanese">和風</button>
-                    <button class="tab-button" data-tab="western">洋風</button>
-                    <button class="tab-button" data-tab="chinese">中華</button>
-                </div>
-
-                <div class="tab-content">
-                    <div id="japanese-tab" class="tab-panel active">
-                        <div class="recipe-card">
-                            <div id="japanese-recipe" class="recipe-content"></div>
-                        </div>
-                    </div>
-                    
-                    <div id="western-tab" class="tab-panel">
-                        <div class="recipe-card">
-                            <div id="western-recipe" class="recipe-content"></div>
-                        </div>
-                    </div>
-                    
-                    <div id="chinese-tab" class="tab-panel">
-                        <div class="recipe-card">
-                            <div id="chinese-recipe" class="recipe-content"></div>
-                        </div>
+                <div class="single-recipe-container">
+                    <div class="recipe-card">
+                        <div id="single-recipe" class="recipe-content"></div>
                     </div>
                 </div>
 

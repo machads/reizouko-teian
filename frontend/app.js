@@ -6,6 +6,7 @@ class RecipeApp {
         this.currentInputMethod = 'text';
         this.uploadedPhoto = null;
         this.extractedIngredients = [];
+        this.selectedGenre = 'japanese'; // デフォルトは和風
         this.init();
     }
 
@@ -18,9 +19,9 @@ class RecipeApp {
         }
 
         this.bindEvents();
-        this.initTabs();
         this.initInputMethods();
         this.initPhotoUpload();
+        this.initGenreSelection();
     }
 
     async checkAuthStatus() {
@@ -36,6 +37,20 @@ class RecipeApp {
         }
     }
 
+    initGenreSelection() {
+        const genreButtons = document.querySelectorAll('.genre-btn');
+        
+        genreButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // 全てのボタンからactiveクラスを削除
+                genreButtons.forEach(btn => btn.classList.remove('active'));
+                // クリックされたボタンにactiveクラスを追加
+                button.classList.add('active');
+                // 選択されたジャンルを保存
+                this.selectedGenre = button.dataset.genre;
+            });
+        });
+    }
 
     bindEvents() {
         const suggestBtn = document.getElementById('suggest-btn');
@@ -333,7 +348,8 @@ class RecipeApp {
             const requestData = {
                 ingredients: ingredientsList,
                 requiredSeasoning: seasoning || undefined,
-                moodRequest: moodRequest || undefined
+                moodRequest: moodRequest || undefined,
+                selectedGenre: this.selectedGenre
             };
 
             // 進捗表示の更新
@@ -407,14 +423,23 @@ class RecipeApp {
     }
 
     displayRecipes(recipes) {
-        const recipeTypes = ['japanese', 'western', 'chinese'];
+        const singleRecipeElement = document.getElementById('single-recipe');
+        const recipeTitleElement = document.getElementById('recipe-title');
         
-        recipeTypes.forEach(type => {
-            const element = document.getElementById(`${type}-recipe`);
-            if (element && recipes[type]) {
-                element.innerHTML = this.formatRecipe(recipes[type]);
-            }
-        });
+        // 選択されたジャンルのレシピを表示
+        const selectedRecipe = recipes[this.selectedGenre];
+        
+        if (singleRecipeElement && selectedRecipe) {
+            singleRecipeElement.innerHTML = this.formatRecipe(selectedRecipe);
+            
+            // タイトルを更新
+            const genreNames = {
+                'japanese': '和風レシピ',
+                'western': '洋風レシピ',
+                'chinese': '中華レシピ'
+            };
+            recipeTitleElement.textContent = genreNames[this.selectedGenre] || 'レシピ提案';
+        }
 
         // 追加食材提案を表示
         this.displayAdditionalIngredients(recipes);

@@ -23,16 +23,25 @@ function sanitizeInput(input) {
         .slice(0, 500); // 長さ制限
 }
 
-function createRecipePrompt(ingredients, requiredSeasoning, moodRequest) {
+function createRecipePrompt(ingredients, requiredSeasoning, moodRequest, selectedGenre = 'japanese') {
     const ingredientsList = ingredients.join('、');
     const seasoningText = requiredSeasoning ? `\n使いたい調味料: ${requiredSeasoning}` : '';
     const moodText = moodRequest ? `\n要望: ${moodRequest}` : '';
     
+    // ジャンルに応じたレシピ名を決定
+    const genreMap = {
+        'japanese': '和風料理',
+        'western': '洋風料理', 
+        'chinese': '中華料理'
+    };
+    
+    const recipeName = genreMap[selectedGenre] || '和風料理';
+    
     return `食材: ${ingredientsList}${seasoningText}${moodText}
 
-以下の形式で3つのレシピを詳細に提案してください：
+以下の形式で${recipeName}のレシピを詳細に提案してください：
 
-【和風料理】
+【${recipeName}】
 【料理名】○○
 【調理時間】準備○分 + 調理○分 = 合計○分
 【材料（2人分）】
@@ -50,42 +59,6 @@ function createRecipePrompt(ingredients, requiredSeasoning, moodRequest) {
 ・美味しくするコツ：プロの技術や科学的根拠
 ・時短のコツ：効率的な手順や準備方法
 
-【洋風料理】
-【料理名】○○
-【調理時間】準備○分 + 調理○分 = 合計○分
-【材料（2人分）】
-・メイン食材：○○g（具体的な部位や種類）
-・副材料：○○個（切り方も記載）
-・調味料：具体的な分量（大さじ○、小さじ○など）
-【詳細な作り方】
-1. 【下準備】食材の洗い方、切り方、下処理を具体的に
-2. 【準備工程】調味料の合わせ方、オーブンの予熱など
-3. 【調理開始】最初の加熱手順（火加減、時間、見た目の変化）
-4. 【中盤】味付けのタイミングと手順（入れる順番、混ぜ方）
-5. 【仕上げ】完成の見極めポイントと最終調整
-【料理のポイント】
-・失敗しないコツ：具体的な注意点と対処法
-・美味しくするコツ：プロの技術や科学的根拠
-・時短のコツ：効率的な手順や準備方法
-
-【中華料理】
-【料理名】○○
-【調理時間】準備○分 + 調理○分 = 合計○分
-【材料（2人分）】
-・メイン食材：○○g（具体的な部位や種類）
-・副材料：○○個（切り方も記載）
-・調味料：具体的な分量（大さじ○、小さじ○など）
-【詳細な作り方】
-1. 【下準備】食材の洗い方、切り方、下処理を具体的に
-2. 【準備工程】調味料の合わせ方、強火の準備など
-3. 【調理開始】最初の加熱手順（火加減、時間、見た目の変化）
-4. 【中盤】味付けのタイミングと手順（入れる順番、混ぜ方）
-5. 【仕上げ】完成の見極めポイントと最終調整
-【料理のポイント】
-・失敗しないコツ：具体的な注意点と対処法
-・美味しくするコツ：プロの技術や科学的根拠
-・時短のコツ：効率的な手順や準備方法
-
 【さらに美味しくする食材提案】
 現在の食材に以下を追加すると、より豊かな味わいになります：
 ・○○を追加 → ○○の効果で味に深みが増します
@@ -93,47 +66,53 @@ function createRecipePrompt(ingredients, requiredSeasoning, moodRequest) {
 ・○○を追加 → 彩りと香りで食欲をそそります`;
 }
 
-function parseRecipes(aiResponse) {
-    const recipes = {
-        japanese: '',
-        western: '',
-        chinese: ''
-    };
-    
+function parseRecipes(aiResponse, selectedGenre = 'japanese') {
     try {
         console.log('AI Response length:', aiResponse.length);
         console.log('AI Response preview:', aiResponse.substring(0, 500) + '...');
+        console.log('Selected genre:', selectedGenre);
         
-        // より柔軟な正規表現を使用
-        const japaneseMatch = aiResponse.match(/【和風料理】([\s\S]*?)(?=【(?:洋風料理|中華料理|食材活用度)】|$)/);
-        const westernMatch = aiResponse.match(/【洋風料理】([\s\S]*?)(?=【(?:中華料理|食材活用度)】|$)/);
-        const chineseMatch = aiResponse.match(/【中華料理】([\s\S]*?)(?=【食材活用度|$)/);
+        // ジャンルに応じたレシピパターンを作成
+        const genreMap = {
+            'japanese': '和風料理',
+            'western': '洋風料理', 
+            'chinese': '中華料理'
+        };
         
-        recipes.japanese = japaneseMatch ? japaneseMatch[1].trim() : '';
-        recipes.western = westernMatch ? westernMatch[1].trim() : '';
-        recipes.chinese = chineseMatch ? chineseMatch[1].trim() : '';
+        const recipeName = genreMap[selectedGenre] || '和風料理';
         
-        console.log('Parsed recipes:', {
-            japanese: !!recipes.japanese,
-            western: !!recipes.western,
-            chinese: !!recipes.chinese,
-            japaneseLength: recipes.japanese.length,
-            westernLength: recipes.western.length,
-            chineseLength: recipes.chinese.length
-        });
+        // 選択されたジャンルのレシピを抽出
+        const recipePattern = new RegExp(`【${recipeName}】([\\s\\S]*?)(?=【(?:さらに美味しくする食材提案|$))`);
+        const recipeMatch = aiResponse.match(recipePattern);
         
-        // 少なくとも1つのレシピがあれば成功とする
-        if (!recipes.japanese && !recipes.western && !recipes.chinese) {
-            console.error('No recipes found in response');
+        if (!recipeMatch) {
+            console.error('No recipe found in response for genre:', selectedGenre);
             throw new Error('レシピの解析に失敗しました');
         }
+        
+        const recipe = recipeMatch[1].trim();
+        
+        console.log('Parsed recipe:', {
+            genre: selectedGenre,
+            hasRecipe: !!recipe,
+            recipeLength: recipe.length
+        });
+        
+        // 単一のレシピを返す（従来の形式と互換性を保つため）
+        const result = {
+            japanese: '',
+            western: '',
+            chinese: ''
+        };
+        
+        result[selectedGenre] = recipe;
+        
+        return result;
         
     } catch (error) {
         console.error('Recipe parsing error:', error);
         throw new Error('AIからの応答を解析できませんでした');
     }
-    
-    return recipes;
 }
 
 module.exports = async function handler(req, res) {
@@ -162,7 +141,7 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const { ingredients, requiredSeasoning, moodRequest } = req.body;
+        const { ingredients, requiredSeasoning, moodRequest, selectedGenre } = req.body;
         
         // バリデーション
         if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
@@ -187,7 +166,8 @@ module.exports = async function handler(req, res) {
         console.log('Recipe request received:', { 
             ingredients: sanitizedIngredients, 
             requiredSeasoning: sanitizedSeasoning, 
-            moodRequest: sanitizedMood 
+            moodRequest: sanitizedMood,
+            selectedGenre: selectedGenre 
         });
         
         if (!process.env.OPENAI_API_KEY) {
@@ -206,7 +186,7 @@ module.exports = async function handler(req, res) {
             timeout: 40000, // 40秒タイムアウト
         });
         
-        const prompt = createRecipePrompt(sanitizedIngredients, sanitizedSeasoning, sanitizedMood);
+        const prompt = createRecipePrompt(sanitizedIngredients, sanitizedSeasoning, sanitizedMood, selectedGenre);
         
         console.log('Calling OpenAI API...');
         console.log('Prompt length:', prompt.length);
@@ -218,14 +198,14 @@ module.exports = async function handler(req, res) {
             messages: [
                 {
                     role: "system",
-                    content: `あなたは15年の経験を持つプロの料理人です。指定食材で和風・洋風・中華の3つのレシピを詳細に提案してください。各レシピはステップバイステップで分かりやすく、実用的なコツも含めてください。必ず【和風料理】【洋風料理】【中華料理】【さらに美味しくする食材提案】の形式で回答。`
+                    content: `あなたは15年の経験を持つプロの料理人です。指定食材で選択されたジャンルのレシピを詳細に提案してください。ステップバイステップで分かりやすく、実用的なコツも含めてください。指定された形式で回答してください。`
                 },
                 {
                     role: "user",
                     content: prompt
                 }
             ],
-            max_tokens: 5000,
+            max_tokens: 2500,
             temperature: 0.7,
             stream: false
         });
@@ -249,7 +229,7 @@ module.exports = async function handler(req, res) {
         
         console.log('AI Response received, length:', aiResponse.length);
         
-        const recipes = parseRecipes(aiResponse);
+        const recipes = parseRecipes(aiResponse, selectedGenre);
         
         // Supabaseに保存（オプション）
         if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
