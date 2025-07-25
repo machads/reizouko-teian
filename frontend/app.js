@@ -378,20 +378,30 @@ class RecipeApp {
                 moodRequest: moodRequest || undefined
             };
 
+            // 進捗表示の更新
+            this.setLoadingState(true, 'OpenAI APIに接続中...');
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 45000); // 45秒でタイムアウト
+            
             const response = await fetch(`${this.apiBaseUrl}/suggest-recipes`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include',
-                body: JSON.stringify(requestData)
+                body: JSON.stringify(requestData),
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || `サーバーエラー: ${response.status}`);
             }
 
+            this.setLoadingState(true, 'レシピを解析中...');
             const recipes = await response.json();
             this.displayRecipes(recipes);
             this.showResults();
@@ -405,16 +415,22 @@ class RecipeApp {
     }
 
     getErrorMessage(error) {
+        if (error.name === 'AbortError') {
+            return '処理に時間がかかりすぎました。食材を減らすか、もう一度お試しください。';
+        }
         if (error.message.includes('fetch')) {
             return 'サーバーに接続できませんでした。バックエンドが起動しているか確認してください。';
         }
         if (error.message.includes('JSON')) {
             return 'サーバーからの応答を解析できませんでした。';
         }
+        if (error.message.includes('timeout') || error.message.includes('Request timed out')) {
+            return '処理に時間がかかりすぎました。食材を減らすか、もう一度お試しください。';
+        }
         return error.message || '予期しないエラーが発生しました。';
     }
 
-    setLoadingState(isLoading, message = '提案中...') {
+    setLoadingState(isLoading, message = 'レシピを生成中...') {
         const suggestBtn = document.getElementById('suggest-btn');
         const buttonText = suggestBtn.querySelector('.button-text');
         const loading = suggestBtn.querySelector('.loading');
