@@ -112,23 +112,30 @@ function parseRecipes(aiResponse) {
     };
     
     try {
-        const sections = aiResponse.split(/【(?:和風料理|洋風料理|中華料理)】/);
+        console.log('AI Response length:', aiResponse.length);
+        console.log('AI Response preview:', aiResponse.substring(0, 500) + '...');
         
-        if (sections.length >= 4) {
-            recipes.japanese = sections[1]?.trim() || '';
-            recipes.western = sections[2]?.trim() || '';
-            recipes.chinese = sections[3]?.trim() || '';
-        } else {
-            const japaneseMatch = aiResponse.match(/【和風料理】([\s\S]*?)(?=【洋風料理】|$)/);
-            const westernMatch = aiResponse.match(/【洋風料理】([\s\S]*?)(?=【中華料理】|$)/);
-            const chineseMatch = aiResponse.match(/【中華料理】([\s\S]*?)$/);
-            
-            recipes.japanese = japaneseMatch ? japaneseMatch[1].trim() : '';
-            recipes.western = westernMatch ? westernMatch[1].trim() : '';
-            recipes.chinese = chineseMatch ? chineseMatch[1].trim() : '';
-        }
+        // より柔軟な正規表現を使用
+        const japaneseMatch = aiResponse.match(/【和風料理】([\s\S]*?)(?=【(?:洋風料理|中華料理|食材活用度)】|$)/);
+        const westernMatch = aiResponse.match(/【洋風料理】([\s\S]*?)(?=【(?:中華料理|食材活用度)】|$)/);
+        const chineseMatch = aiResponse.match(/【中華料理】([\s\S]*?)(?=【食材活用度|$)/);
         
+        recipes.japanese = japaneseMatch ? japaneseMatch[1].trim() : '';
+        recipes.western = westernMatch ? westernMatch[1].trim() : '';
+        recipes.chinese = chineseMatch ? chineseMatch[1].trim() : '';
+        
+        console.log('Parsed recipes:', {
+            japanese: !!recipes.japanese,
+            western: !!recipes.western,
+            chinese: !!recipes.chinese,
+            japaneseLength: recipes.japanese.length,
+            westernLength: recipes.western.length,
+            chineseLength: recipes.chinese.length
+        });
+        
+        // 少なくとも1つのレシピがあれば成功とする
         if (!recipes.japanese && !recipes.western && !recipes.chinese) {
+            console.error('No recipes found in response');
             throw new Error('レシピの解析に失敗しました');
         }
         
@@ -232,6 +239,8 @@ module.exports = async function handler(req, res) {
 
 指定された食材を使って、ありきたりではない創意工夫のあるレシピを提案してください。
 各工程は詳細に説明し、プロならではのコツとポイントを含めてください。
+
+**重要**: 必ず【和風料理】【洋風料理】【中華料理】の3つすべてのレシピを提案してください。
 形式を厳密に守って、読みやすく実用的なレシピを作成してください。`
                 },
                 {
