@@ -353,7 +353,7 @@ class RecipeApp {
             };
 
             // 進捗表示の更新
-            this.setLoadingState(true, 'OpenAI APIに接続中...');
+            this.setLoadingState(true, 'レシピ考え中...');
             
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 45000); // 45秒でタイムアウト
