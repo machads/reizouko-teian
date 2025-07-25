@@ -45,20 +45,36 @@ class RecipeApp {
             logoutBtn.id = 'logout-btn';
             logoutBtn.textContent = 'ログアウト';
             logoutBtn.style.cssText = `
-                position: absolute;
-                top: 20px;
-                right: 20px;
-                padding: 8px 16px;
+                float: right;
+                margin-top: 10px;
+                padding: 6px 12px;
                 background: #e74c3c;
                 color: white;
                 border: none;
                 border-radius: 4px;
                 cursor: pointer;
-                font-size: 14px;
+                font-size: 12px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: background-color 0.2s;
             `;
+            
+            // モバイル対応
+            if (window.innerWidth <= 768) {
+                logoutBtn.style.cssText += `
+                    float: none;
+                    display: block;
+                    width: 80px;
+                    margin: 10px auto 0;
+                    text-align: center;
+                `;
+            }
             logoutBtn.addEventListener('click', () => this.handleLogout());
-            header.style.position = 'relative';
             header.appendChild(logoutBtn);
+            
+            // clearfixのためのdivを追加
+            const clearDiv = document.createElement('div');
+            clearDiv.style.clear = 'both';
+            header.appendChild(clearDiv);
         }
     }
 
