@@ -419,30 +419,29 @@ main {
 }
 
 .recipe-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 10px;
-    padding: 25px;
-    border-left: 4px solid #4c63d2;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .recipe-content {
     white-space: pre-wrap;
     line-height: 1.7;
-    color: #ffffff;
+    color: #2c3e50;
     font-size: 1rem;
 }
 
 .recipe-content h3 {
-    color: #ffffff;
+    color: #2c3e50;
     margin-bottom: 15px;
     font-size: 1.4rem;
     font-weight: 700;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .recipe-content h4 {
-    color: #f0f0f0;
+    color: #34495e;
     margin-top: 20px;
     margin-bottom: 10px;
     font-size: 1.1rem;
@@ -450,90 +449,101 @@ main {
 }
 
 .recipe-content .step {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 10px 15px;
+    background: rgba(52, 73, 94, 0.05);
+    padding: 12px 16px;
     border-radius: 8px;
     margin: 10px 0;
-    border-left: 3px solid rgba(255, 255, 255, 0.3);
+    border-left: 3px solid rgba(52, 73, 94, 0.3);
+    color: #2c3e50;
+    font-weight: 500;
 }
 
 .recipe-content p {
     margin: 8px 0;
+    color: #34495e;
 }
 
 /* レシピ項目ボックス */
 .recipe-item-box {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    padding: 15px;
-    margin: 15px 0;
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
 }
 
 .recipe-item-box:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+    border-color: rgba(0, 0, 0, 0.15);
 }
 
 /* 料理名セクション */
 .recipe-title-section {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
-    border-left: 4px solid #FFD700;
+    border-left: 4px solid #2c3e50;
+    background: rgba(44, 62, 80, 0.02);
 }
 
 .recipe-title-section h3 {
-    color: #FFD700 !important;
+    color: #2c3e50 !important;
     font-size: 1.5rem !important;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    font-weight: 700;
+    margin-bottom: 8px;
 }
 
 /* 調理時間セクション */
 .recipe-time-section {
-    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(76, 175, 80, 0.1) 100%);
-    border-left: 4px solid #4CAF50;
+    border-left: 4px solid #34495e;
+    background: rgba(52, 73, 94, 0.02);
 }
 
 .recipe-time-section h3 {
-    color: #81C784 !important;
+    color: #34495e !important;
+    font-weight: 600;
 }
 
 /* 材料セクション */
 .recipe-ingredients-section {
-    background: linear-gradient(135deg, rgba(255, 152, 0, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%);
-    border-left: 4px solid #FF9800;
+    border-left: 4px solid #2c3e50;
+    background: rgba(44, 62, 80, 0.02);
 }
 
 .recipe-ingredients-section h3 {
-    color: #FFB74D !important;
+    color: #2c3e50 !important;
+    font-weight: 600;
 }
 
 /* 作り方セクション */
 .recipe-steps-section {
-    background: linear-gradient(135deg, rgba(63, 81, 181, 0.15) 0%, rgba(63, 81, 181, 0.1) 100%);
-    border-left: 4px solid #3F51B5;
+    border-left: 4px solid #34495e;
+    background: rgba(52, 73, 94, 0.02);
 }
 
 .recipe-steps-section h3 {
-    color: #7986CB !important;
+    color: #34495e !important;
+    font-weight: 600;
 }
 
 .recipe-steps-section .step {
-    background: rgba(255, 255, 255, 0.15);
-    border-left: 3px solid rgba(121, 134, 203, 0.5);
+    background: rgba(52, 73, 94, 0.05);
+    border-left: 3px solid rgba(52, 73, 94, 0.3);
+    padding: 12px 16px;
+    margin: 10px 0;
+    border-radius: 6px;
+    font-weight: 500;
 }
 
 /* ポイントセクション */
 .recipe-tips-section {
-    background: linear-gradient(135deg, rgba(233, 30, 99, 0.15) 0%, rgba(233, 30, 99, 0.1) 100%);
-    border-left: 4px solid #E91E63;
+    border-left: 4px solid #2c3e50;
+    background: rgba(44, 62, 80, 0.02);
 }
 
 .recipe-tips-section h3 {
-    color: #F06292 !important;
+    color: #2c3e50 !important;
+    font-weight: 600;
 }
 
 /* ジャンル選択 */
