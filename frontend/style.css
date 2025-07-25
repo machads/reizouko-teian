@@ -461,6 +461,81 @@ main {
     margin: 8px 0;
 }
 
+/* レシピ項目ボックス */
+.recipe-item-box {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.recipe-item-box:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* 料理名セクション */
+.recipe-title-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
+    border-left: 4px solid #FFD700;
+}
+
+.recipe-title-section h3 {
+    color: #FFD700 !important;
+    font-size: 1.5rem !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 調理時間セクション */
+.recipe-time-section {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(76, 175, 80, 0.1) 100%);
+    border-left: 4px solid #4CAF50;
+}
+
+.recipe-time-section h3 {
+    color: #81C784 !important;
+}
+
+/* 材料セクション */
+.recipe-ingredients-section {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%);
+    border-left: 4px solid #FF9800;
+}
+
+.recipe-ingredients-section h3 {
+    color: #FFB74D !important;
+}
+
+/* 作り方セクション */
+.recipe-steps-section {
+    background: linear-gradient(135deg, rgba(63, 81, 181, 0.15) 0%, rgba(63, 81, 181, 0.1) 100%);
+    border-left: 4px solid #3F51B5;
+}
+
+.recipe-steps-section h3 {
+    color: #7986CB !important;
+}
+
+.recipe-steps-section .step {
+    background: rgba(255, 255, 255, 0.15);
+    border-left: 3px solid rgba(121, 134, 203, 0.5);
+}
+
+/* ポイントセクション */
+.recipe-tips-section {
+    background: linear-gradient(135deg, rgba(233, 30, 99, 0.15) 0%, rgba(233, 30, 99, 0.1) 100%);
+    border-left: 4px solid #E91E63;
+}
+
+.recipe-tips-section h3 {
+    color: #F06292 !important;
+}
+
 /* 追加食材提案セクション */
 .additional-ingredients-section {
     background: white;
@@ -863,6 +938,16 @@ footer {
     
     .recipe-content h4 {
         font-size: 1rem;
+    }
+    
+    /* モバイル用レシピ項目ボックス */
+    .recipe-item-box {
+        padding: 12px;
+        margin: 10px 0;
+    }
+    
+    .recipe-title-section h3 {
+        font-size: 1.3rem !important;
     }
 }
 

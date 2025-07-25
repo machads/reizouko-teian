@@ -528,15 +528,33 @@ class RecipeApp {
         
         let result = '';
         let currentSection = '';
+        let sectionClass = '';
         
         lines.forEach(line => {
             if (line.startsWith('<h3>')) {
                 if (currentSection) {
                     result += '</div>';
                 }
+                
+                // セクションのクラスを決定
+                const sectionTitle = line.replace(/<\/?h3>/g, '');
+                if (sectionTitle.includes('料理名')) {
+                    sectionClass = 'recipe-title-section';
+                } else if (sectionTitle.includes('調理時間')) {
+                    sectionClass = 'recipe-time-section';
+                } else if (sectionTitle.includes('材料')) {
+                    sectionClass = 'recipe-ingredients-section';
+                } else if (sectionTitle.includes('作り方') || sectionTitle.includes('詳細な作り方')) {
+                    sectionClass = 'recipe-steps-section';
+                } else if (sectionTitle.includes('ポイント')) {
+                    sectionClass = 'recipe-tips-section';
+                } else {
+                    sectionClass = 'recipe-section';
+                }
+                
+                result += `<div class="recipe-item-box ${sectionClass}">`;
                 result += line;
                 currentSection = 'section';
-                result += '<div class="recipe-section">';
             } else if (line.includes('：') || line.includes(':')) {
                 const parts = line.split(/：|:/);
                 if (parts.length >= 2) {
