@@ -21,7 +21,6 @@ class RecipeApp {
         this.initTabs();
         this.initInputMethods();
         this.initPhotoUpload();
-        this.addLogoutButton();
     }
 
     async checkAuthStatus() {
@@ -37,63 +36,6 @@ class RecipeApp {
         }
     }
 
-    addLogoutButton() {
-        // ヘッダーにログアウトボタンを追加
-        const header = document.querySelector('header');
-        if (header && !document.getElementById('logout-btn')) {
-            const logoutBtn = document.createElement('button');
-            logoutBtn.id = 'logout-btn';
-            logoutBtn.textContent = 'ログアウト';
-            logoutBtn.style.cssText = `
-                float: right;
-                margin-top: 10px;
-                padding: 6px 12px;
-                background: #e74c3c;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 12px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                transition: background-color 0.2s;
-            `;
-            
-            // モバイル対応
-            if (window.innerWidth <= 768) {
-                logoutBtn.style.cssText += `
-                    float: none;
-                    display: block;
-                    width: 80px;
-                    margin: 10px auto 0;
-                    text-align: center;
-                `;
-            }
-            logoutBtn.addEventListener('click', () => this.handleLogout());
-            header.appendChild(logoutBtn);
-            
-            // clearfixのためのdivを追加
-            const clearDiv = document.createElement('div');
-            clearDiv.style.clear = 'both';
-            header.appendChild(clearDiv);
-        }
-    }
-
-    async handleLogout() {
-        try {
-            const response = await fetch(`${this.apiBaseUrl}/logout`, {
-                method: 'POST',
-                credentials: 'include'
-            });
-            
-            if (response.ok) {
-                window.location.href = '/login.html';
-            } else {
-                console.error('ログアウトに失敗しました');
-            }
-        } catch (error) {
-            console.error('ログアウトエラー:', error);
-        }
-    }
 
     bindEvents() {
         const suggestBtn = document.getElementById('suggest-btn');
