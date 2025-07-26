@@ -151,35 +151,111 @@ class RecipeApp {
     }
 
     async handlePhotoUpload(file) {
-        // ファイルサイズチェック（10MB以下）
-        if (file.size > 10 * 1024 * 1024) {
-            this.showError('ファイルサイズが大きすぎます（10MB以下にしてください）');
-            return;
-        }
-
         // ファイル形式チェック
         if (!file.type.startsWith('image/')) {
             this.showError('画像ファイルを選択してください');
             return;
         }
 
-        this.uploadedPhoto = file;
-        
-        // プレビュー表示
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const previewImage = document.getElementById('preview-image');
-            const photoPreview = document.getElementById('photo-preview');
-            const uploadPlaceholder = document.getElementById('upload-placeholder');
+        try {
+            // 圧縮中のローディング表示
+            this.setLoadingState(true, '画像を圧縮中...');
             
-            previewImage.src = e.target.result;
-            photoPreview.style.display = 'block';
-            uploadPlaceholder.style.display = 'none';
-        };
-        reader.readAsDataURL(file);
+            // 画像を圧縮
+            const compressedFile = await this.compressImage(file);
+            
+            // 圧縮後のファイルサイズチェック（5MB以下）
+            if (compressedFile.size > 5 * 1024 * 1024) {
+                this.showError('圧縮後もファイルサイズが大きすぎます（5MB以下にしてください）');
+                return;
+            }
 
-        // 食材認識処理（今は仮の実装）
-        await this.extractIngredientsFromPhoto(file);
+            this.uploadedPhoto = compressedFile;
+            
+            // プレビュー表示
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const previewImage = document.getElementById('preview-image');
+                const photoPreview = document.getElementById('photo-preview');
+                const uploadPlaceholder = document.getElementById('upload-placeholder');
+                
+                previewImage.src = e.target.result;
+                photoPreview.style.display = 'block';
+                uploadPlaceholder.style.display = 'none';
+            };
+            reader.readAsDataURL(compressedFile);
+
+            // 食材認識処理
+            await this.extractIngredientsFromPhoto(compressedFile);
+        } catch (error) {
+            console.error('画像処理エラー:', error);
+            this.showError('画像の処理中にエラーが発生しました');
+        } finally {
+            this.setLoadingState(false);
+        }
+    }
+
+    async compressImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.8) {
+        return new Promise((resolve, reject) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = () => {
+                // 元の画像サイズを取得
+                let { width, height } = img;
+                
+                // 最大サイズに合わせてリサイズ計算
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+                }
+                
+                // キャンバスサイズを設定
+                canvas.width = width;
+                canvas.height = height;
+                
+                // 画像をキャンバスに描画
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // JPEGとして圧縮
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        // 元のファイル情報を保持した新しいFileオブジェクトを作成
+                        const compressedFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        
+                        console.log(`画像圧縮完了: ${file.size} bytes → ${compressedFile.size} bytes`);
+                        resolve(compressedFile);
+                    } else {
+                        reject(new Error('画像の圧縮に失敗しました'));
+                    }
+                }, 'image/jpeg', quality);
+            };
+            
+            img.onerror = () => {
+                reject(new Error('画像の読み込みに失敗しました'));
+            };
+            
+            // FileをData URLとして読み込み
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                img.src = e.target.result;
+            };
+            reader.onerror = () => {
+                reject(new Error('ファイルの読み込みに失敗しました'));
+            };
+            reader.readAsDataURL(file);
+        });
     }
 
     async extractIngredientsFromPhoto(file) {
