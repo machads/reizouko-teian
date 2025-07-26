@@ -30,9 +30,9 @@ async function testImageUpload() {
         });
 
         console.log('画像アップロードテストを開始...');
-        console.log('URL: http://localhost:3006/api/upload-photo');
+        console.log('URL: http://localhost:3000/api/upload-photo');
 
-        const response = await fetch('http://localhost:3006/api/upload-photo', {
+        const response = await fetch('http://localhost:3000/api/upload-photo', {
             method: 'POST',
             body: form,
             headers: form.getHeaders()

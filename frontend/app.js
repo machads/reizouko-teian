@@ -1,7 +1,7 @@
 class RecipeApp {
     constructor() {
         this.apiBaseUrl = window.location.hostname === 'localhost' 
-            ? 'http://localhost:3003/api' 
+            ? 'http://localhost:3000/api' 
             : `${window.location.origin}/api`;
         this.currentInputMethod = 'text';
         this.uploadedPhoto = null;
